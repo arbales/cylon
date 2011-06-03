@@ -19,6 +19,8 @@ https  = require 'https'
 qs     = require 'querystring'
 env    = process.env
 exec   = require('child_process').exec
+io    = require('socket.io')
+redis = require('redis')
 
 
 #
@@ -296,3 +298,15 @@ hear /(the story)/i, (message) ->
 hear /(respond|answer me|bij)/i, (message) ->
   message.say "EXPERIENCE BIJ."
 
+server = http.createServer (req, res) ->
+  res.writeHead 200, { 'Content-Type': 'text/html' }
+  res.end 'Nothing to see here...'
+server.listen 4815
+
+# attach socket.io server
+socket = io.listen server
+
+sub_client = redis.createClient()
+sub_client.subscribe 'Cylon:stream'
+sub_client.on 'message', (channel, message) ->
+  socket.broadcast message
