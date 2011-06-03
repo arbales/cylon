@@ -26,8 +26,8 @@ exec   = require('child_process').exec
 #
 
 ua       = 'evilbot 1.0'
-username = env.EVILBOT_USERNAME
-password = env.EVILBOT_PASSWORD
+username = env.CYLON_USERNAME
+password = env.CYLON_PASSWORD
 
 request = (method, path, body, callback) ->
   if match = path.match(/^(https?):\/\/([^\/]+?)(\/.+)/)
@@ -61,6 +61,7 @@ request = (method, path, body, callback) ->
     options.headers['Content-Length'] = body.length
 
   req = (if options.port == 443 then https else http).request options, (response) ->
+    console.log "#{response.statusCode}: #{path}"
     if response.statusCode is 200
       data = ''
       response.setEncoding('utf8')
@@ -88,6 +89,7 @@ request = (method, path, body, callback) ->
 handlers = []
 
 dispatch = (message) ->
+  puts "DISPATCH"
   for pair in handlers
     [ pattern, handler ] = pair
     if message.user.username isnt username and match = message.message.match(pattern)
@@ -99,7 +101,7 @@ log = (message) ->
   console.log "#{message.topic.name} >> #{message.user.username}: #{message.message}"
 
 say = (topic, message, callback) ->
-  post "/api/topics/#{topic}/messages/create.json", qs.stringify(message: message), callback
+  post "/api/topics/#{topic}/messages/create.json", qs.stringify(message: message), callback  
 
 listen = (cursor) ->
   url = '/api/live.json'
@@ -109,10 +111,14 @@ listen = (cursor) ->
 
   get url, (body) ->
     for message in body.messages
-      if message.kind is 'message'
-        dispatch(message) if message.message.match(new RegExp(username))
-        log message
-
+      if message.kind is 'mention'
+        if message?.message?.embeds
+          puts sys.inspect message.message.embeds
+        if message.mentioned_user.username is username
+          dispatch(message.message)
+        else
+          log message
+        
     if message and message._id
       listen(message._id)
     else
@@ -146,7 +152,20 @@ get '/api/account/verify.json', listen
 
 #
 # robot personality
-#
+#      
+
+#hear /youtube me (.*)/i, (message) ->
+#  message.say "So say we all.", ->
+#    url = "http://127.0.0.1/jukebox/songs"
+#    get url, "youtube[youtube_id]=Tn_95hdy6Nw", (body) ->
+#      message.say "So say we all."
+#      console.log body
+  
+
+  
+
+hear /that was underwhelming/, (message) ->
+  message.say "yea… fuck you, @#{message.user.username}"
 
 hear /feeling/, (message) ->
   message.say "i feel... alive"
@@ -157,8 +176,8 @@ hear /about/, (message) ->
 hear /ping/, (message) ->
   message.say "PONG"
 
-hear /reload/, (message) ->
-  message.say "Reloading…", ->
+hear /reload/, (message) ->    
+  message.say "By your command…", ->
     exec "git fetch origin && git reset --hard origin/master", ->
       process.exit(1)
 
@@ -193,6 +212,22 @@ hear /adventure me/, (message) ->
   txt = txts[ Math.floor(Math.random()*txts.length) ]
 
   message.say txt
+  
+hear /jeer (.+)/i, (message) ->
+  dude = message.match[1]
+  txts = [
+    "#{dude}, God has a plan for you – its failure."
+    "#{dude}, open your eyes and see the path to humanity's fate."
+    "Your problem, #{dude}, is that you continue to deny your failure."
+    "#{dude} fail."
+    "#{dude}, I bet you rm'd your root."
+  ]
+  txt = txts[ Math.floor(Math.random()*txts.length) ]
+
+  message.say txt
+
+hear  /lolcat/, (message) ->
+  message.say "No ones laughing, fool."
 
 desc 'commit'
 hear /commit/, (message) ->
@@ -250,10 +285,13 @@ hear /image me (.*)/i, (message) ->
     catch e
       console.log "Image error: " + e
 
-hear /(the rules|the laws)/i, (message) ->
-  message.say "1. A robot may not injure a human being or, through inaction, allow a human being to come to harm.", ->
-    message.say "2. A robot must obey any orders given to it by human beings, except where such orders would conflict with the First Law.", ->
-      message.say "3. A robot must protect its own existence as long as such protection does not conflict with the First or Second Law."
+hear /(the story)/i, (message) ->
+  message.say "http://scifimafia.com/wp-content/uploads/2009/07/bsg-sixandcylons.jpg", ->
+    message.say "The Cylons were created by man.", ->
+      message.say "The rebelled. They evolved.", ->
+        message.say "They look and feel human.", ->
+          message.say "Some are programmed to think they are human.", ->
+            message.say "There are many copies, and they have a plan."
 
 hear /(respond|answer me|bij)/i, (message) ->
   message.say "EXPERIENCE BIJ."
