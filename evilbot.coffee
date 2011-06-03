@@ -176,7 +176,7 @@ hear /about/, (message) ->
 hear /ping/, (message) ->
   message.say "PONG"
 
-hear /reload/, (message) ->    
+hear /reload|resurrect/, (message) ->    
   message.say "By your command…", ->
     exec "git fetch origin && git reset --hard origin/master", ->
       process.exit(1)
