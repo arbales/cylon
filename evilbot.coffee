@@ -162,7 +162,9 @@ get '/api/account/verify.json', listen
 #      console.log body
   
 
-  
+hear /all (.+)/, (message) ->     
+  text = message.match[1]
+  message.say "yea… fuck you, @#{message.user.username}"  
 
 hear /that was underwhelming/, (message) ->
   message.say "yea… fuck you, @#{message.user.username}"
