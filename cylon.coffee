@@ -162,6 +162,9 @@ get '/api/account/verify.json', listen
 #    get url, "youtube[youtube_id]=Tn_95hdy6Nw", (body) ->
 #      message.say "So say we all."
 #      console.log body
+
+hear /do you have any software?/, (message) ->
+  message.say "No software."
   
 hear /ping (.+)/, (message) ->
   message.say "Sending notification. By your command.", ->
