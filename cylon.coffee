@@ -166,8 +166,18 @@ get '/api/account/verify.json', listen
 hear /do you have any software?/, (message) ->
   message.say "No software."
   
-hear /ping (.+)/, (message) ->
+hear /ping ([^\s]*@[a-z0-9.-]*) (.)/i, (message) ->
   message.say "Sending notification. By your command.", ->
+    if message.match[2]
+      body = """
+             They said:
+              
+              #{message.match[2]}
+              
+             """
+    else
+      body = ""
+      
     postmark.send {
       "From": env.POSTMARK_FROM_EMAIL, 
       "To": message.match[1], 
@@ -176,6 +186,8 @@ hear /ping (.+)/, (message) ->
                   Hi there,
                 
                   #{message.user.username} pinged you in the Convore group '#{message.topic.name}'.
+                  
+                  #{body}
                 
                   To view this topic, visit: https://convore.com#{message.topic.url}.
                 
@@ -317,3 +329,20 @@ hear /(the story)/i, (message) ->
 hear /(respond|answer me|bij)/i, (message) ->
   message.say "EXPERIENCE BIJ."
 
+###
+Host-machine specific stuff.
+###
+
+hear /volume (\d+)/, (message) ->
+  console.log message.match[1]
+  exec "osascript -e 'set volume output volume #{message.match[1]}'", ->
+    message.say "Volume set. By your command."
+    
+hear /volume\+\+/i, (message) ->
+  exec "osascript -e 'set volume output volume (output volume of (get volume settings) + 7)'", ->
+    message.say "Volume incremented. By your command."
+
+hear /volume--/i, (message) ->
+  exec "osascript -e 'set volume output volume (output volume of (get volume settings) - 7)'", ->
+    message.say "Volume decremented. By your command."
+    
