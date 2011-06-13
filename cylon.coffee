@@ -211,8 +211,9 @@ hear /about/, (message) ->
 
 hear /reload|resurrect/, (message) ->    
   message.say "By your command…", ->
-    exec "git fetch origin && git reset --hard origin/master && npm install", ->
-      process.exit(1)
+    exec "afplay etc/cylon.wav", ->
+      exec "git fetch origin && git reset --hard origin/master && npm install", ->
+        process.exit(1)
 
 hear /help/, (message) ->
   message.say "I listen for the following…", ->
