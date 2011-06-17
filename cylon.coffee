@@ -259,6 +259,18 @@ hear /jeer (.+)/i, (message) ->
   txt = txts[ Math.floor(Math.random()*txts.length) ]
 
   message.say txt
+  
+hear /cheer (.+)/i, (message) ->
+  dude = message.match[1]
+  txts = [
+    "#{dude}, you're awesome."
+    "#{dude}, good job super seeker."
+    "Today #{dude}, you've done well."
+    "#{dude} #winning."
+  ]
+  txt = txts[ Math.floor(Math.random()*txts.length) ]
+
+  message.say txt  
 
 hear  /lolcat/, (message) ->
   message.say "No ones laughing, fool."
